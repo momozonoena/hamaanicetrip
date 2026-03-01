@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理员后台 - 排表管理</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* 头部 */
+        .header {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 24px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .admin-badge {
+            background: #dc3545;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        .nav-buttons {
+            display: flex;
+            gap: 10px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            color: white;
+        }
+        .btn-primary { background: #667eea; }
+        .btn-success { background: #28a745; }
+        .btn-danger { background: #dc3545; }
+        
+        /* 统计卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .stat-card h3 {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .stat-number {
+            font-size: 28px;
+            font-weight: bold;
+            color: #333;
+        }
+        .stat-small {
+            color: #999;
+            font-size: 13px;
+            margin-top: 5px;
+        }
+        
+        /* 管理操作 */
+        .action-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .action-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .action-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .action-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #dc3545;
+        }
+        .action-card h4 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+        .action-card p {
+            color: #666;
+            font-size: 13px;
+            margin-bottom: 10px;
+        }
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .delete-btn {
+            width: 100%;
+            padding: 8px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .warning-box {
+            background: #fff3cd;
+            color: #856404;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        
+        /* 表格 */
+        .table-section {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+        th {
+            background: #343a40;
+            color: white;
+            padding: 12px;
+        }
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .message {
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .stats-grid, .action-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚙️ 管理员后台 <span class="admin-badge">管理员</span></h1>
+            <div class="nav-buttons">
+                <button class="btn btn-primary" onclick="goHome()">返回首页</button>
+                <button class="btn btn-success" onclick="exportData()">📥 导出CSV</button>
+                <button class="btn btn-danger" onclick="logout()">退出</button>
+            </div>
+        </div>
+        
+        <div id="message" class="message"></div>
+        
+        <!-- 统计卡片 -->
+        <div class="stats-grid" id="statsCards"></div>
+        
+        <!-- 密码提示 -->
+        <div class="warning-box">
+            <strong>📌 导出密码：</strong> hamanicetrip
+        </div>
+        
+        <!-- 管理操作 -->
+        <div class="action-section">
+            <div class="action-title">🛠️ 管理操作</div>
+            <div class="action-grid">
+                <!-- 删除单条 -->
+                <div class="action-card">
+                    <h4>🗑️ 删除单条记录</h4>
+                    <p>根据序号删除指定的排表记录</p>
+                    <select id="orderSelect"></select>
+                    <button class="delete-btn" onclick="deleteSingle()">删除选中记录</button>
+                </div>
+                
+                <!-- 删除用户 -->
+                <div class="action-card">
+                    <h4>👤 删除用户所有记录</h4>
+                    <p>删除某个用户的所有排表</p>
+                    <select id="userSelect"></select>
+                    <button class="delete-btn" onclick="deleteUser()">删除该用户所有记录</button>
+                </div>
+                
+                <!-- 危险操作 -->
+                <div class="action-card" style="border-left-color: #721c24;">
+                    <h4>⚠️ 危险操作</h4>
+                    <p>清空所有排表记录，重置所有库存</p>
+                    <button class="delete-btn" onclick="resetAll()" style="background: #721c24;">清空所有数据</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 所有记录 -->
+        <div class="table-section">
+            <h2 style="margin-bottom: 20px;">📝 所有排表记录</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>序号</th>
+                        <th>CN</th>
+                        <th>角色</th>
+                        <th>数量</th>
+                        <th>时间</th>
+                    </tr>
+                </thead>
+                <tbody id="ordersTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const ROLES = [
+            '丛云添', '大黑可不可', '西园练牙', '神名雪风', '鹿礼光',
+            '斜木七基', '衣川季助', '五十竹芥太', '久乐间潮', '夏烧千弥',
+            '畔川几成', '北片来人', '木之内太绪', '百目鬼潜', '白光琉衣',
+            '白光潜衣', '蜂乃屋凪', '夜半'
+        ];
+
+        // 检查管理员权限
+        if (localStorage.getItem('isAdmin') !== 'true') {
+            window.location.href = 'index.html';
+        }
+
+        // 获取数据
+        function getInventory() {
+            return JSON.parse(localStorage.getItem('inventory')) || {};
+        }
+        function getOrders() {
+            return JSON.parse(localStorage.getItem('orders')) || [];
+        }
+        function saveInventory(inv) {
+            localStorage.setItem('inventory', JSON.stringify(inv));
+        }
+        function saveOrders(orders) {
+            localStorage.setItem('orders', JSON.stringify(orders));
+        }
+
+        // 显示消息
+        function showMessage(text) {
+            const msg = document.getElementById('message');
+            msg.style.display = 'block';
+            msg.style.background = '#d4edda';
+            msg.style.color = '#155724';
+            msg.textContent = '✅ ' + text;
+            setTimeout(() => msg.style.display = 'none', 3000);
+        }
+
+        // 更新统计
+        function updateStats() {
+            const orders = getOrders();
+            const inventory = getInventory();
+            const users = [...new Set(orders.map(o => o.cn))];
+            const totalQty = orders.reduce((sum, o) => sum + o.quantity, 0);
+            const totalRemaining = Object.values(inventory).reduce((sum, i) => sum + i.remaining, 0);
+            const totalInventory = ROLES.length * 320;
+
+            document.getElementById('statsCards').innerHTML = `
+                <div class="stat-card">
+                    <h3>总排表数量</h3>
+                    <div class="stat-number">${totalQty}张</div>
+                    <div class="stat-small">共 ${orders.length} 条记录</div>
+                </div>
+                <div class="stat-card">
+                    <h3>参与人数</h3>
+                    <div class="stat-number">${users.length}人</div>
+                    <div class="stat-small">人均 ${users.length ? (totalQty/users.length).toFixed(1) : 0}张</div>
+                </div>
+                <div class="stat-card">
+                    <h3>剩余库存</h3>
+                    <div class="stat-number">${totalRemaining}张</div>
+                    <div class="stat-small">完成度 ${((totalInventory-totalRemaining)/totalInventory*100).toFixed(1)}%</div>
+                </div>
+            `;
+        }
+
+        // 更新下拉框
+        function updateSelects() {
+            const orders = getOrders();
+            const orderSelect = document.getElementById('orderSelect');
+            const userSelect = document.getElementById('userSelect');
+            const users = [...new Set(orders.map(o => o.cn))];
+
+            orderSelect.innerHTML = '<option value="">选择要删除的记录</option>';
+            orders.forEach((order, i) => {
+                orderSelect.innerHTML += `<option value="${i}">[${i}] ${order.cn} - ${order.role} - ${order.quantity}张</option>`;
+            });
+
+            userSelect.innerHTML = '<option value="">选择用户</option>';
+            users.forEach(user => {
+                userSelect.innerHTML += `<option value="${user}">${user}</option>`;
+            });
+        }
+
+        // 更新表格
+        function updateTable() {
+            const orders = getOrders();
+            const tbody = document.getElementById('ordersTable');
+            tbody.innerHTML = '';
+
+            if (orders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;">暂无记录</td></tr>';
+                return;
+            }
+
+            orders.forEach((order, i) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${i}</td>
+                        <td>${order.cn}</td>
+                        <td>${order.role}</td>
+                        <td>${order.quantity}张</td>
+                        <td>${order.time}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // 删除单条
+        function deleteSingle() {
+            const index = document.getElementById('orderSelect').value;
+            if (index === '') return alert('请选择记录');
+
+            if (!confirm('确定删除？')) return;
+
+            const orders = getOrders();
+            const inventory = getInventory();
+            const order = orders[index];
+
+            inventory[order.role].remaining += order.quantity;
+            orders.splice(index, 1);
+
+            saveInventory(inventory);
+            saveOrders(orders);
+
+            updateStats();
+            updateSelects();
+            updateTable();
+            showMessage('记录已删除');
+        }
+
+        // 删除用户
+        function deleteUser() {
+            const user = document.getElementById('userSelect').value;
+            if (user === '') return alert('请选择用户');
+
+            if (!confirm(`确定删除用户 ${user} 的所有记录？`)) return;
+
+            const orders = getOrders();
+            const inventory = getInventory();
+            let deleted = 0;
+
+            const newOrders = orders.filter(order => {
+                if (order.cn === user) {
+                    inventory[order.role].remaining += order.quantity;
+                    deleted++;
+                    return false;
+                }
+                return true;
+            });
+
+            saveInventory(inventory);
+            saveOrders(newOrders);
+
+            updateStats();
+            updateSelects();
+            updateTable();
+            showMessage(`已删除用户 ${user} 的 ${deleted} 条记录`);
+        }
+
+        // 重置所有
+        function resetAll() {
+            const pwd = prompt('请输入导出密码以确认：');
+            if (pwd !== 'hamanicetrip') return alert('密码错误！');
+
+            if (!confirm('⚠️ 这将删除所有记录并重置库存！确定？')) return;
+
+            const inventory = {};
+            ROLES.forEach(role => inventory[role] = { total: 320, remaining: 320 });
+            
+            saveInventory(inventory);
+            saveOrders([]);
+
+            updateStats();
+            updateSelects();
+            updateTable();
+            showMessage('所有数据已重置');
+        }
+
+        // 导出数据
+        function exportData() {
+            const pwd = prompt('请输入导出密码：');
+            if (pwd !== 'hamanicetrip') return alert('密码错误！');
+
+            const orders = getOrders();
+            const inventory = getInventory();
+
+            let csv = "=== 排表明细 ===\n";
+            csv += "CN,角色,数量,时间\n";
+            orders.forEach(o => csv += `${o.cn},${o.role},${o.quantity},${o.time}\n`);
+
+            csv += "\n=== 库存状态 ===\n";
+            csv += "角色,剩余库存\n";
+            ROLES.forEach(role => {
+                csv += `${role},${inventory[role]?.remaining || 320}\n`;
+            });
+
+            const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = '周边排表_' + new Date().toISOString().slice(0,19).replace(/:/g, '-') + '.csv';
+            link.click();
+        }
+
+        // 返回首页
+        function goHome() {
+            window.location.href = 'index.html';
+        }
+
+        // 退出
+        function logout() {
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('isAdmin');
+            window.location.href = 'index.html';
+        }
+
+        // 初始化
+        updateStats();
+        updateSelects();
+        updateTable();
+    </script>
+</body>
+</html>

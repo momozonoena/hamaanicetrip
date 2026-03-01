@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>周边排表系统</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        /* 头部 */
+        .header {
+            background: white;
+            border-radius: 10px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 24px;
+            color: #333;
+        }
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .logout-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        /* 提示 */
+        .note {
+            background: #fff3cd;
+            color: #856404;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        /* 消息提示 */
+        .message {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        /* 主内容区 */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 20px;
+        }
+        
+        /* 左侧 */
+        .left-column {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        
+        /* 添加表单 */
+        .add-form {
+            margin-bottom: 30px;
+        }
+        .add-form h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        .form-group {
+            display: flex;
+            gap: 10px;
+        }
+        select, input {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        select {
+            flex: 2;
+        }
+        input {
+            flex: 1;
+        }
+        .add-btn {
+            background: #17a2b8;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        /* 库存表格 */
+        .inventory-table {
+            overflow-x: auto;
+        }
+        .inventory-table h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+        th {
+            background: #667eea;
+            color: white;
+            padding: 12px;
+            font-weight: normal;
+        }
+        td {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .stock-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .stock-high { background: #28a745; }
+        .stock-medium { background: #ffc107; }
+        .stock-low { background: #dc3545; }
+        .total-row {
+            background: #e9ecef;
+            font-weight: bold;
+        }
+        
+        /* 右侧购物车 */
+        .right-column {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+        }
+        .cart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #667eea;
+        }
+        .cart-header h2 {
+            font-size: 18px;
+            color: #333;
+        }
+        .cart-total {
+            background: #667eea;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        .cart-items {
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .cart-item-info {
+            flex: 1;
+        }
+        .cart-item-role {
+            font-weight: bold;
+            color: #333;
+        }
+        .cart-item-quantity {
+            font-size: 13px;
+            color: #667eea;
+        }
+        .cart-item-remove {
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0 5px;
+        }
+        .cart-empty {
+            text-align: center;
+            color: #999;
+            padding: 40px 0;
+        }
+        .cart-actions {
+            display: flex;
+            gap: 10px;
+        }
+        .submit-btn {
+            flex: 2;
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .clear-btn {
+            flex: 1;
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        
+        /* 订单历史 */
+        .order-history {
+            margin-top: 30px;
+        }
+        .order-history h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            .form-group {
+                flex-direction: column;
+            }
+            select, input, .add-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>周边排表系统</h1>
+            <div class="user-info">
+                <span id="currentUser"></span>
+                <button class="logout-btn" onclick="logout()">退出</button>
+            </div>
+        </div>
+        
+        <div class="note">📌 提示：每个角色初始库存320张，请以10的倍数进行排表。可同时添加多个角色到购物车。</div>
+        <div id="message" class="message"></div>
+        
+        <div class="main-content">
+            <!-- 左侧内容 -->
+            <div class="left-column">
+                <div class="add-form">
+                    <h2>➕ 添加角色到购物车</h2>
+                    <div class="form-group">
+                        <select id="roleSelect">
+                            <option value="">-- 请选择角色 --</option>
+                        </select>
+                        <input type="number" id="quantity" placeholder="数量 (10的倍数)" min="10" step="10" value="10">
+                        <button class="add-btn" onclick="addToCart()">加入购物车</button>
+                    </div>
+                </div>
+                
+                <div class="inventory-table">
+                    <h2>📊 当前库存状态</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>角色名称</th>
+                                <th>总库存</th>
+                                <th>剩余库存</th>
+                                <th>购物车中</th>
+                                <th>可排数量</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryBody"></tbody>
+                    </table>
+                </div>
+                
+                <div class="order-history">
+                    <h2>📝 我的排表记录</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>角色</th>
+                                <th>数量</th>
+                                <th>提交时间</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyBody"></tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- 右侧购物车 -->
+            <div class="right-column">
+                <div class="cart-header">
+                    <h2>🛒 购物车</h2>
+                    <span class="cart-total" id="cartTotal">0张</span>
+                </div>
+                <div class="cart-items" id="cartItems">
+                    <div class="cart-empty">购物车是空的<br>请从左侧添加角色</div>
+                </div>
+                <div class="cart-actions">
+                    <button class="submit-btn" onclick="submitOrder()">提交全部订单</button>
+                    <button class="clear-btn" onclick="clearCart()">清空</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ROLES = [
+            '丛云添', '大黑可不可', '西园练牙', '神名雪风', '鹿礼光',
+            '斜木七基', '衣川季助', '五十竹芥太', '久乐间潮', '夏烧千弥',
+            '畔川几成', '北片来人', '木之内太绪', '百目鬼潜', '白光琉衣',
+            '白光潜衣', '蜂乃屋凪', '夜半'
+        ];
+
+        let currentUser = localStorage.getItem('currentUser');
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+        if (!currentUser) window.location.href = 'index.html';
+        document.getElementById('currentUser').textContent = '👤 ' + currentUser;
+
+        // 获取库存
+        function getInventory() {
+            return JSON.parse(localStorage.getItem('inventory')) || {};
+        }
+
+        // 保存库存
+        function saveInventory(inv) {
+            localStorage.setItem('inventory', JSON.stringify(inv));
+        }
+
+        // 获取订单
+        function getOrders() {
+            return JSON.parse(localStorage.getItem('orders')) || [];
+        }
+
+        // 保存订单
+        function saveOrders(orders) {
+            localStorage.setItem('orders', JSON.stringify(orders));
+        }
+
+        // 显示消息
+        function showMessage(text, isSuccess = true) {
+            const msg = document.getElementById('message');
+            msg.style.display = 'block';
+            msg.style.background = isSuccess ? '#d4edda' : '#f8d7da';
+            msg.style.color = isSuccess ? '#155724' : '#721c24';
+            msg.textContent = text;
+            setTimeout(() => msg.style.display = 'none', 3000);
+        }
+
+        // 更新角色选择
+        function updateRoleSelect() {
+            const select = document.getElementById('roleSelect');
+            const inventory = getInventory();
+            select.innerHTML = '<option value="">-- 请选择角色 --</option>';
+            ROLES.forEach(role => {
+                const remaining = inventory[role]?.remaining || 320;
+                select.innerHTML += `<option value="${role}">${role} (剩余: ${remaining}张)</option>`;
+            });
+        }
+
+        // 更新库存表格
+        function updateInventoryTable() {
+            const inventory = getInventory();
+            const tbody = document.getElementById('inventoryBody');
+            let totalRemaining = 0, totalInCart = 0;
+            tbody.innerHTML = '';
+
+            ROLES.forEach(role => {
+                const item = inventory[role] || { total: 320, remaining: 320 };
+                const cartQty = cart.filter(i => i.role === role).reduce((sum, i) => sum + i.quantity, 0);
+                const available = item.remaining - cartQty;
+                totalRemaining += item.remaining;
+                totalInCart += cartQty;
+
+                let stockClass = available >= 150 ? 'stock-high' : available >= 50 ? 'stock-medium' : 'stock-low';
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${role}</td>
+                        <td>320</td>
+                        <td>${item.remaining}</td>
+                        <td>${cartQty}</td>
+                        <td><span class="stock-dot ${stockClass}"></span>${available}</td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML += `
+                <tr class="total-row">
+                    <td>总计</td>
+                    <td>${ROLES.length * 320}</td>
+                    <td>${totalRemaining}</td>
+                    <td>${totalInCart}</td>
+                    <td>${totalRemaining - totalInCart}</td>
+                </tr>
+            `;
+        }
+
+        // 更新购物车
+        function updateCart() {
+            const cartItems = document.getElementById('cartItems');
+            const cartTotal = document.getElementById('cartTotal');
+            
+            if (cart.length === 0) {
+                cartItems.innerHTML = '<div class="cart-empty">购物车是空的<br>请从左侧添加角色</div>';
+                cartTotal.textContent = '0张';
+                return;
+            }
+
+            let html = '';
+            let total = 0;
+            cart.forEach((item, index) => {
+                total += item.quantity;
+                html += `
+                    <div class="cart-item">
+                        <div class="cart-item-info">
+                            <div class="cart-item-role">${item.role}</div>
+                            <div class="cart-item-quantity">${item.quantity}张</div>
+                        </div>
+                        <span class="cart-item-remove" onclick="removeFromCart(${index})">×</span>
+                    </div>
+                `;
+            });
+            cartItems.innerHTML = html;
+            cartTotal.textContent = total + '张';
+        }
+
+        // 更新订单历史
+        function updateHistory() {
+            const orders = getOrders().filter(o => o.cn === currentUser);
+            const tbody = document.getElementById('historyBody');
+            
+            if (orders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:20px;">暂无记录</td></tr>';
+                return;
+            }
+
+            let total = 0;
+            tbody.innerHTML = '';
+            orders.forEach(order => {
+                total += order.quantity;
+                tbody.innerHTML += `<tr><td>${order.role}</td><td>${order.quantity}张</td><td>${order.time}</td></tr>`;
+            });
+            tbody.innerHTML += `<tr class="total-row"><td>累计</td><td>${total}张</td><td></td></tr>`;
+        }
+
+        // 添加到购物车
+        function addToCart() {
+            const role = document.getElementById('roleSelect').value;
+            const quantity = parseInt(document.getElementById('quantity').value);
+
+            if (!role) return showMessage('请选择角色', false);
+            if (quantity % 10 !== 0) return showMessage('数量必须是10的倍数', false);
+
+            const inventory = getInventory();
+            const cartQty = cart.filter(i => i.role === role).reduce((sum, i) => sum + i.quantity, 0);
+
+            if (cartQty + quantity > inventory[role].remaining) {
+                return showMessage(`库存不足！剩余：${inventory[role].remaining}张，购物车已有：${cartQty}张`, false);
+            }
+
+            cart.push({ role, quantity, time: new Date().toLocaleString() });
+            localStorage.setItem('cart', JSON.stringify(cart));
+            
+            updateCart();
+            updateInventoryTable();
+            updateRoleSelect();
+            showMessage('✅ 已添加到购物车');
+        }
+
+        // 从购物车移除
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            updateCart();
+            updateInventoryTable();
+            updateRoleSelect();
+        }
+
+        // 清空购物车
+        function clearCart() {
+            if (confirm('确定清空购物车？')) {
+                cart = [];
+                localStorage.setItem('cart', JSON.stringify(cart));
+                updateCart();
+                updateInventoryTable();
+                updateRoleSelect();
+            }
+        }
+
+        // 提交订单
+        function submitOrder() {
+            if (cart.length === 0) return showMessage('购物车是空的', false);
+            if (!confirm('确认提交订单？')) return;
+
+            const inventory = getInventory();
+            const orders = getOrders();
+
+            // 检查库存
+            for (let item of cart) {
+                if (inventory[item.role].remaining < item.quantity) {
+                    return showMessage(`库存不足：${item.role}`, false);
+                }
+            }
+
+            // 更新库存和订单
+            cart.forEach(item => {
+                inventory[item.role].remaining -= item.quantity;
+                orders.push({
+                    cn: currentUser,
+                    role: item.role,
+                    quantity: item.quantity,
+                    time: new Date().toLocaleString()
+                });
+            });
+
+            saveInventory(inventory);
+            saveOrders(orders);
+
+            cart = [];
+            localStorage.setItem('cart', JSON.stringify(cart));
+
+            updateCart();
+            updateInventoryTable();
+            updateRoleSelect();
+            updateHistory();
+            showMessage('✅ 订单提交成功');
+        }
+
+        // 退出
+        function logout() {
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('isAdmin');
+            window.location.href = 'index.html';
+        }
+
+        // 初始化
+        updateRoleSelect();
+        updateInventoryTable();
+        updateCart();
+        updateHistory();
+    </script>
+</body>
+</html>
