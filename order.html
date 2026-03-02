@@ -271,7 +271,7 @@
             </div>
         </div>
         
-        <div class="note">📌 提示：每个角色初始库存320张，请以10的倍数进行排表。可同时添加多个角色到购物车。</div>
+        <div class="note">📌 提示：每个角色初始库存320张，可同时添加多个角色到购物车。数据自动保存，刷新页面不会丢失。</div>
         <div id="message" class="message"></div>
         
         <div class="main-content">
@@ -283,7 +283,7 @@
                         <select id="roleSelect">
                             <option value="">-- 请选择角色 --</option>
                         </select>
-                        <input type="number" id="quantity" placeholder="数量 (10的倍数)" min="10" step="10" value="10">
+                        <input type="number" id="quantity" placeholder="数量" min="1" value="1">
                         <button class="add-btn" onclick="addToCart()">加入购物车</button>
                     </div>
                 </div>
@@ -337,14 +337,17 @@
     </div>
 
     <script>
+        // 角色列表（新增辉矢宗氏）
         const ROLES = [
             '丛云添', '大黑可不可', '西园练牙', '神名雪风', '鹿礼光',
             '斜木七基', '衣川季助', '五十竹芥太', '久乐间潮', '夏烧千弥',
             '畔川几成', '北片来人', '木之内太绪', '百目鬼潜', '白光琉衣',
-            '白光潜衣', '蜂乃屋凪', '夜半'
+            '白光潜衣', '蜂乃屋凪', '夜半', '辉矢宗氏'
         ];
 
         let currentUser = localStorage.getItem('currentUser');
+        
+        // 从localStorage读取购物车
         let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
         if (!currentUser) window.location.href = 'index.html';
@@ -409,7 +412,7 @@
                 tbody.innerHTML += `
                     <tr>
                         <td>${role}</td>
-                        <td>320</td>
+                        <td>${item.total}</td>
                         <td>${item.remaining}</td>
                         <td>${cartQty}</td>
                         <td><span class="stock-dot ${stockClass}"></span>${available}</td>
@@ -420,7 +423,7 @@
             tbody.innerHTML += `
                 <tr class="total-row">
                     <td>总计</td>
-                    <td>${ROLES.length * 320}</td>
+                    <td>${ROLES.reduce((sum, role) => sum + (getInventory()[role]?.total || 320), 0)}</td>
                     <td>${totalRemaining}</td>
                     <td>${totalInCart}</td>
                     <td>${totalRemaining - totalInCart}</td>
@@ -455,6 +458,9 @@
             });
             cartItems.innerHTML = html;
             cartTotal.textContent = total + '张';
+            
+            // 保存购物车到localStorage
+            localStorage.setItem('cart', JSON.stringify(cart));
         }
 
         // 更新订单历史
@@ -482,7 +488,7 @@
             const quantity = parseInt(document.getElementById('quantity').value);
 
             if (!role) return showMessage('请选择角色', false);
-            if (quantity % 10 !== 0) return showMessage('数量必须是10的倍数', false);
+            if (quantity < 1) return showMessage('请输入有效数量', false);
 
             const inventory = getInventory();
             const cartQty = cart.filter(i => i.role === role).reduce((sum, i) => sum + i.quantity, 0);
