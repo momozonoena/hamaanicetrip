@@ -21,7 +21,6 @@
             margin: 0 auto;
         }
         
-        /* 头部 */
         .header {
             background: white;
             border-radius: 10px;
@@ -30,6 +29,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 15px;
         }
         .header h1 {
             font-size: 24px;
@@ -48,6 +49,7 @@
         .nav-buttons {
             display: flex;
             gap: 10px;
+            flex-wrap: wrap;
         }
         .btn {
             padding: 10px 20px;
@@ -55,13 +57,13 @@
             border-radius: 5px;
             cursor: pointer;
             color: white;
+            font-size: 14px;
         }
         .btn-primary { background: #667eea; }
         .btn-success { background: #28a745; }
         .btn-danger { background: #dc3545; }
         .btn-warning { background: #ffc107; color: #333; }
         
-        /* 统计卡片 */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -89,8 +91,8 @@
             margin-top: 5px;
         }
         
-        /* 库存管理 */
-        .inventory-management {
+        /* 角色管理 */
+        .role-management {
             background: white;
             border-radius: 10px;
             padding: 20px;
@@ -102,37 +104,76 @@
             margin-bottom: 20px;
             color: #333;
         }
-        .inventory-edit-grid {
+        .add-role-form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .add-role-form input {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .role-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+        }
+        .role-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .role-name {
+            font-weight: bold;
+            color: #333;
+        }
+        .delete-role {
+            color: #dc3545;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 0 5px;
+        }
+        
+        /* 库存管理 */
+        .inventory-management {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .inventory-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
             gap: 15px;
         }
-        .inventory-edit-card {
+        .inventory-card {
             background: #f8f9fa;
             padding: 15px;
             border-radius: 8px;
             border-left: 4px solid #28a745;
         }
-        .inventory-edit-card .role-name {
+        .inventory-card .role-name {
             font-weight: bold;
             margin-bottom: 10px;
             color: #333;
         }
-        .inventory-edit-card .stock-input {
+        .stock-control {
             display: flex;
             gap: 10px;
             align-items: center;
         }
-        .inventory-edit-card input {
+        .stock-control input {
             flex: 1;
             padding: 8px;
             border: 1px solid #ddd;
             border-radius: 4px;
-        }
-        .inventory-edit-card .current-stock {
-            font-size: 13px;
-            color: #666;
-            margin-top: 5px;
         }
         .update-btn {
             background: #28a745;
@@ -141,6 +182,11 @@
             padding: 8px 12px;
             border-radius: 4px;
             cursor: pointer;
+        }
+        .current-stock {
+            font-size: 13px;
+            color: #666;
+            margin-top: 5px;
         }
         
         /* 管理操作 */
@@ -187,7 +233,6 @@
             cursor: pointer;
         }
         
-        /* 表格 */
         .table-section {
             background: white;
             border-radius: 10px;
@@ -217,5 +262,451 @@
         }
         
         @media (max-width: 768px) {
-            .stats-grid, .action-grid, .inventory-edit-grid {
-                grid-template-columns
+            .stats-grid, .action-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>⚙️ 管理员后台 <span class="admin-badge">管理员</span></h1>
+            <div class="nav-buttons">
+                <button class="btn btn-primary" onclick="goHome()">返回首页</button>
+                <button class="btn btn-success" onclick="exportCSV()">📥 导出CSV</button>
+                <button class="btn btn-danger" onclick="logout()">退出</button>
+            </div>
+        </div>
+        
+        <div id="message" class="message"></div>
+        
+        <!-- 统计卡片 -->
+        <div class="stats-grid" id="statsCards"></div>
+        
+        <!-- 角色管理 -->
+        <div class="role-management">
+            <div class="section-title">🎭 角色管理</div>
+            <div class="add-role-form">
+                <input type="text" id="newRoleName" placeholder="新角色名称">
+                <input type="number" id="newRoleStock" placeholder="初始库存" value="320" min="1">
+                <button class="btn btn-success" onclick="addRole()">添加角色</button>
+            </div>
+            <div class="role-list" id="roleList"></div>
+        </div>
+        
+        <!-- 库存管理 -->
+        <div class="inventory-management">
+            <div class="section-title">📦 库存管理</div>
+            <div class="inventory-grid" id="inventoryManagement"></div>
+        </div>
+        
+        <!-- 管理操作 -->
+        <div class="action-section">
+            <div class="section-title">🛠️ 管理操作</div>
+            <div class="action-grid">
+                <!-- 删除单条记录 -->
+                <div class="action-card">
+                    <h4>🗑️ 删除单条记录</h4>
+                    <p>根据序号删除指定的排表记录</p>
+                    <select id="orderSelect"></select>
+                    <button class="delete-btn" onclick="deleteSingleOrder()">删除选中记录</button>
+                </div>
+                
+                <!-- 删除用户所有记录 -->
+                <div class="action-card">
+                    <h4>👤 删除用户所有记录</h4>
+                    <p>删除某个用户的所有排表</p>
+                    <select id="userSelect"></select>
+                    <button class="delete-btn" onclick="deleteUserOrders()">删除该用户所有记录</button>
+                </div>
+                
+                <!-- 危险操作 -->
+                <div class="action-card" style="border-left-color: #721c24;">
+                    <h4>⚠️ 危险操作</h4>
+                    <p>清空所有排表记录，重置所有库存</p>
+                    <button class="delete-btn" onclick="resetAllData()" style="background: #721c24;">清空所有数据</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 所有排表记录 -->
+        <div class="table-section">
+            <h2 style="margin-bottom: 20px;">📝 所有排表记录</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>序号</th>
+                        <th>CN</th>
+                        <th>角色</th>
+                        <th>数量</th>
+                        <th>时间</th>
+                    </tr>
+                </thead>
+                <tbody id="ordersTable"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        // 检查管理员权限
+        if (localStorage.getItem('isAdmin') !== 'true') {
+            window.location.href = 'index.html';
+        }
+
+        // 获取数据
+        function getRoles() {
+            return JSON.parse(localStorage.getItem('roles')) || [];
+        }
+
+        function getInventory() {
+            return JSON.parse(localStorage.getItem('inventory')) || {};
+        }
+
+        function getOrders() {
+            return JSON.parse(localStorage.getItem('orders')) || [];
+        }
+
+        function saveRoles(roles) {
+            localStorage.setItem('roles', JSON.stringify(roles));
+        }
+
+        function saveInventory(inv) {
+            localStorage.setItem('inventory', JSON.stringify(inv));
+        }
+
+        function saveOrders(orders) {
+            localStorage.setItem('orders', JSON.stringify(orders));
+        }
+
+        // 显示消息
+        function showMessage(text) {
+            const msg = document.getElementById('message');
+            msg.style.display = 'block';
+            msg.style.background = '#d4edda';
+            msg.style.color = '#155724';
+            msg.textContent = '✅ ' + text;
+            setTimeout(() => msg.style.display = 'none', 3000);
+        }
+
+        // 更新统计卡片
+        function updateStats() {
+            const orders = getOrders();
+            const inventory = getInventory();
+            const users = [...new Set(orders.map(o => o.cn))];
+            const totalQty = orders.reduce((sum, o) => sum + o.quantity, 0);
+            const totalRemaining = Object.values(inventory).reduce((sum, i) => sum + i.remaining, 0);
+            const totalInventory = Object.values(inventory).reduce((sum, i) => sum + i.total, 0);
+
+            document.getElementById('statsCards').innerHTML = `
+                <div class="stat-card">
+                    <h3>总排表数量</h3>
+                    <div class="stat-number">${totalQty}张</div>
+                    <div class="stat-small">共 ${orders.length} 条记录</div>
+                </div>
+                <div class="stat-card">
+                    <h3>参与人数</h3>
+                    <div class="stat-number">${users.length}人</div>
+                    <div class="stat-small">人均 ${users.length ? (totalQty/users.length).toFixed(1) : 0}张</div>
+                </div>
+                <div class="stat-card">
+                    <h3>剩余库存</h3>
+                    <div class="stat-number">${totalRemaining}张</div>
+                    <div class="stat-small">完成度 ${((totalInventory-totalRemaining)/totalInventory*100).toFixed(1)}%</div>
+                </div>
+            `;
+        }
+
+        // 更新角色列表显示
+        function updateRoleList() {
+            const roles = getRoles();
+            const list = document.getElementById('roleList');
+            list.innerHTML = '';
+
+            roles.forEach(role => {
+                const div = document.createElement('div');
+                div.className = 'role-item';
+                div.innerHTML = `
+                    <span class="role-name">${role}</span>
+                    <span class="delete-role" onclick="deleteRole('${role}')">×</span>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        // 更新库存管理
+        function updateInventoryManagement() {
+            const roles = getRoles();
+            const inventory = getInventory();
+            const grid = document.getElementById('inventoryManagement');
+            grid.innerHTML = '';
+
+            roles.forEach(role => {
+                const item = inventory[role] || { total: 320, remaining: 320 };
+                const div = document.createElement('div');
+                div.className = 'inventory-card';
+                div.innerHTML = `
+                    <div class="role-name">${role}</div>
+                    <div class="stock-control">
+                        <input type="number" id="stock-${role}" value="${item.total}" min="1">
+                        <button class="update-btn" onclick="updateStock('${role}')">更新</button>
+                    </div>
+                    <div class="current-stock">当前剩余: ${item.remaining}张</div>
+                `;
+                grid.appendChild(div);
+            });
+        }
+
+        // 更新下拉框
+        function updateSelects() {
+            const orders = getOrders();
+            const orderSelect = document.getElementById('orderSelect');
+            const userSelect = document.getElementById('userSelect');
+            const users = [...new Set(orders.map(o => o.cn))];
+
+            orderSelect.innerHTML = '<option value="">选择要删除的记录</option>';
+            orders.forEach((order, i) => {
+                orderSelect.innerHTML += `<option value="${i}">[${i}] ${order.cn} - ${order.role} - ${order.quantity}张</option>`;
+            });
+
+            userSelect.innerHTML = '<option value="">选择用户</option>';
+            users.forEach(user => {
+                userSelect.innerHTML += `<option value="${user}">${user}</option>`;
+            });
+        }
+
+        // 更新订单表格
+        function updateOrdersTable() {
+            const orders = getOrders();
+            const tbody = document.getElementById('ordersTable');
+            tbody.innerHTML = '';
+
+            if (orders.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:20px;">暂无记录</td></tr>';
+                return;
+            }
+
+            orders.forEach((order, i) => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${i}</td>
+                        <td>${order.cn}</td>
+                        <td>${order.role}</td>
+                        <td>${order.quantity}张</td>
+                        <td>${order.time}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        // 添加角色
+        function addRole() {
+            const newRole = document.getElementById('newRoleName').value.trim();
+            const stock = parseInt(document.getElementById('newRoleStock').value);
+
+            if (!newRole) return alert('请输入角色名称');
+
+            const roles = getRoles();
+            const inventory = getInventory();
+
+            if (roles.includes(newRole)) {
+                return alert('角色已存在');
+            }
+
+            roles.push(newRole);
+            inventory[newRole] = { total: stock, remaining: stock };
+
+            saveRoles(roles);
+            saveInventory(inventory);
+
+            document.getElementById('newRoleName').value = '';
+            updateRoleList();
+            updateInventoryManagement();
+            updateStats();
+            showMessage(`角色 ${newRole} 添加成功`);
+        }
+
+        // 删除角色
+        function deleteRole(role) {
+            if (!confirm(`确定要删除角色 ${role} 吗？`)) return;
+
+            const roles = getRoles();
+            const inventory = getInventory();
+            const orders = getOrders();
+
+            // 检查是否有该角色的订单
+            const hasOrders = orders.some(o => o.role === role);
+            if (hasOrders && !confirm(`该角色已有排表记录，删除后相关记录将无法显示，确定继续？`)) return;
+
+            const newRoles = roles.filter(r => r !== role);
+            delete inventory[role];
+
+            saveRoles(newRoles);
+            saveInventory(inventory);
+
+            updateRoleList();
+            updateInventoryManagement();
+            updateStats();
+            showMessage(`角色 ${role} 已删除`);
+        }
+
+        // 更新库存
+        function updateStock(role) {
+            const newTotal = parseInt(document.getElementById(`stock-${role}`).value);
+            if (newTotal < 1) return alert('库存必须大于0');
+
+            const inventory = getInventory();
+            const currentRemaining = inventory[role].remaining;
+            const currentTotal = inventory[role].total;
+            
+            // 计算新的剩余库存
+            const diff = newTotal - currentTotal;
+            const newRemaining = currentRemaining + diff;
+
+            if (newRemaining < 0) {
+                return alert('新库存不能小于已售出的数量');
+            }
+
+            inventory[role] = { total: newTotal, remaining: newRemaining };
+            saveInventory(inventory);
+
+            updateInventoryManagement();
+            updateStats();
+            showMessage(`${role} 库存已更新`);
+        }
+
+        // 删除单条记录
+        function deleteSingleOrder() {
+            const index = document.getElementById('orderSelect').value;
+            if (index === '') return alert('请选择记录');
+
+            if (!confirm('确定删除这条记录？')) return;
+
+            const orders = getOrders();
+            const inventory = getInventory();
+            const order = orders[index];
+
+            inventory[order.role].remaining += order.quantity;
+            orders.splice(index, 1);
+
+            saveInventory(inventory);
+            saveOrders(orders);
+
+            updateStats();
+            updateSelects();
+            updateOrdersTable();
+            updateInventoryManagement();
+            showMessage('记录已删除');
+        }
+
+        // 删除用户所有记录
+        function deleteUserOrders() {
+            const user = document.getElementById('userSelect').value;
+            if (user === '') return alert('请选择用户');
+
+            if (!confirm(`确定删除用户 ${user} 的所有记录？`)) return;
+
+            const orders = getOrders();
+            const inventory = getInventory();
+            let deleted = 0;
+
+            const newOrders = orders.filter(order => {
+                if (order.cn === user) {
+                    inventory[order.role].remaining += order.quantity;
+                    deleted++;
+                    return false;
+                }
+                return true;
+            });
+
+            saveInventory(inventory);
+            saveOrders(newOrders);
+
+            updateStats();
+            updateSelects();
+            updateOrdersTable();
+            updateInventoryManagement();
+            showMessage(`已删除用户 ${user} 的 ${deleted} 条记录`);
+        }
+
+        // 重置所有数据
+        function resetAllData() {
+            const pwd = prompt('请输入导出密码以确认：');
+            if (pwd !== 'hamanicetrip') return alert('密码错误！');
+
+            if (!confirm('⚠️ 这将删除所有记录并重置所有角色的库存为320！确定？')) return;
+
+            const roles = getRoles();
+            const inventory = {};
+            roles.forEach(role => {
+                inventory[role] = { total: 320, remaining: 320 };
+            });
+
+            saveInventory(inventory);
+            saveOrders([]);
+
+            updateStats();
+            updateSelects();
+            updateOrdersTable();
+            updateInventoryManagement();
+            showMessage('所有数据已重置');
+        }
+
+        // 导出CSV
+        function exportCSV() {
+            const pwd = prompt('请输入导出密码：');
+            if (pwd !== 'hamanicetrip') return alert('密码错误！');
+
+            const orders = getOrders();
+            const inventory = getInventory();
+            const roles = getRoles();
+
+            let csv = "=== 排表明细 ===\n";
+            csv += "CN,角色,数量,时间\n";
+            orders.forEach(o => csv += `${o.cn},${o.role},${o.quantity},${o.time}\n`);
+
+            csv += "\n=== 库存状态 ===\n";
+            csv += "角色,总库存,剩余库存\n";
+            roles.forEach(role => {
+                const item = inventory[role] || { total: 320, remaining: 320 };
+                csv += `${role},${item.total},${item.remaining}\n`;
+            });
+
+            const totalQty = orders.reduce((sum, o) => sum + o.quantity, 0);
+            const users = [...new Set(orders.map(o => o.cn))];
+            csv += "\n=== 统计信息 ===\n";
+            csv += `总排表数量,${totalQty}张\n`;
+            csv += `总订单数,${orders.length}个\n`;
+            csv += `参与人数,${users.length}人\n`;
+            csv += `导出时间,${new Date().toLocaleString()}\n`;
+
+            const blob = new Blob(["\uFEFF" + csv], { type: 'text/csv' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = '周边排表_' + new Date().toISOString().slice(0,19).replace(/:/g, '-') + '.csv';
+            link.click();
+        }
+
+        function goHome() {
+            window.location.href = 'index.html';
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('isAdmin');
+            window.location.href = 'index.html';
+        }
+
+        // 初始化
+        function init() {
+            updateStats();
+            updateRoleList();
+            updateInventoryManagement();
+            updateSelects();
+            updateOrdersTable();
+        }
+
+        init();
+    </script>
+</body>
+</html>
