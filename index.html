@@ -234,7 +234,7 @@
                         <li>查看所有用户排表记录</li>
                         <li>删除/修改排表</li>
                         <li>导出CSV/Excel数据</li>
-                        <li>跨设备数据同步</li>
+                        <li>数据云端持久化</li>
                     </ul>
                 </div>
             </div>
@@ -242,7 +242,9 @@
         
         <div class="inventory-section">
             <div class="inventory-title">📊 当前库存状态</div>
-            <div class="inventory-grid" id="inventoryGrid"></div>
+            <div class="inventory-grid" id="inventoryGrid">
+                <div style="text-align: center; grid-column: 1/-1; padding: 20px;">加载中...</div>
+            </div>
             <div class="legend">
                 <div class="legend-item"><span class="legend-color" style="background: #d4edda;"></span>充足 (≥150)</div>
                 <div class="legend-item"><span class="legend-color" style="background: #fff3cd;"></span>适中 (50-149)</div>
@@ -252,11 +254,16 @@
         </div>
         
         <div class="footer">
-            <p>数据自动保存 | 管理员账号：18trip | 导出密码：hamanicetrip</p>
+            <p>数据云端保存，刷新不会丢失 | 管理员账号：18trip | 导出密码：hamanicetrip</p>
         </div>
     </div>
 
     <script>
+        // JSONBin.io 配置 - 请替换为您的实际配置
+        const BIN_ID = '67d63b238a456b79667f6f3b'; // 您的Bin ID
+        const API_KEY = '$2a$10$QWzTyyKbjDzMAaMPbWz6l.kntHx4rMZ6pNz0M0S8nRqLmX9vKjY1S'; // 您的API Key
+        const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
         // 默认角色列表
         const DEFAULT_ROLES = [
             '丛云添', '大黑可不可', '西园练牙', '神名雪风', '鹿礼光',
@@ -265,80 +272,79 @@
             '白光潜衣', '蜂乃屋凪', '夜半', '辉矢宗氏'
         ];
 
-        // API地址 - 需要替换为您的服务器地址
-        const API_URL = 'data.php';
-
         // 初始化数据
         async function initData() {
             try {
-                const response = await fetch(API_URL);
-                const data = await response.json();
+                // 尝试从云端加载数据
+                const response = await fetch(API_URL, {
+                    headers: {
+                        'X-Master-Key': API_KEY
+                    }
+                });
                 
-                if (!data.roles || data.roles.length === 0) {
-                    // 首次使用，初始化默认数据
-                    const inventory = {};
-                    DEFAULT_ROLES.forEach(role => {
-                        inventory[role] = { total: 320, remaining: 320 };
-                    });
+                if (response.ok) {
+                    const result = await response.json();
+                    const data = result.record;
                     
-                    await fetch(API_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            roles: DEFAULT_ROLES,
-                            inventory: inventory,
-                            orders: []
-                        })
-                    });
+                    // 更新本地存储作为备份
+                    localStorage.setItem('backup_roles', JSON.stringify(data.roles));
+                    localStorage.setItem('backup_inventory', JSON.stringify(data.inventory));
+                    localStorage.setItem('backup_orders', JSON.stringify(data.orders));
+                    
+                    displayInventory(data.roles, data.inventory);
+                    return;
                 }
-                
-                displayInventory();
             } catch (error) {
-                console.error('数据初始化失败:', error);
-                // 降级使用localStorage
-                initLocalData();
-                displayInventory();
+                console.log('云端加载失败，使用本地备份', error);
             }
-        }
-
-        // 降级使用localStorage
-        function initLocalData() {
-            if (!localStorage.getItem('roles')) {
-                localStorage.setItem('roles', JSON.stringify(DEFAULT_ROLES));
-            }
-            if (!localStorage.getItem('inventory')) {
-                const roles = JSON.parse(localStorage.getItem('roles')) || DEFAULT_ROLES;
-                const inventory = {};
-                roles.forEach(role => {
+            
+            // 如果云端加载失败，尝试从本地备份加载
+            let roles = JSON.parse(localStorage.getItem('backup_roles'));
+            let inventory = JSON.parse(localStorage.getItem('backup_inventory'));
+            
+            if (!roles || !inventory) {
+                // 首次使用，创建默认数据
+                roles = DEFAULT_ROLES;
+                inventory = {};
+                DEFAULT_ROLES.forEach(role => {
                     inventory[role] = { total: 320, remaining: 320 };
                 });
-                localStorage.setItem('inventory', JSON.stringify(inventory));
+                
+                // 保存到云端
+                const orders = JSON.parse(localStorage.getItem('backup_orders')) || [];
+                await saveToCloud({ roles, inventory, orders });
             }
-            if (!localStorage.getItem('orders')) {
-                localStorage.setItem('orders', JSON.stringify([]));
-            }
+            
+            displayInventory(roles, inventory);
         }
 
-        // 获取数据
-        async function getData() {
+        // 保存数据到云端
+        async function saveToCloud(data) {
             try {
-                const response = await fetch(API_URL);
-                return await response.json();
+                const response = await fetch(API_URL, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': API_KEY
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    // 更新本地备份
+                    localStorage.setItem('backup_roles', JSON.stringify(data.roles));
+                    localStorage.setItem('backup_inventory', JSON.stringify(data.inventory));
+                    localStorage.setItem('backup_orders', JSON.stringify(data.orders));
+                    return true;
+                }
             } catch (error) {
-                console.error('获取数据失败，使用localStorage', error);
-                return {
-                    roles: JSON.parse(localStorage.getItem('roles')) || DEFAULT_ROLES,
-                    inventory: JSON.parse(localStorage.getItem('inventory')) || {},
-                    orders: JSON.parse(localStorage.getItem('orders')) || []
-                };
+                console.error('保存到云端失败', error);
             }
+            return false;
         }
 
         // 显示库存
-        async function displayInventory() {
-            const data = await getData();
-            const roles = data.roles || DEFAULT_ROLES;
-            const inventory = data.inventory || {};
+        function displayInventory(roles, inventory) {
             const grid = document.getElementById('inventoryGrid');
             grid.innerHTML = '';
             
@@ -400,6 +406,7 @@
             }
         }
 
+        // 初始化
         initData();
     </script>
 </body>
