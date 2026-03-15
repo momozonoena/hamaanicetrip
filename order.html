@@ -268,7 +268,7 @@
             </div>
         </div>
         
-        <div class="note">📌 提示：每个角色配数可自定义，数据实时同步，所有用户共享库存。</div>
+        <div class="note">📌 提示：数据云端保存，刷新不会丢失，所有用户共享库存。</div>
         <div id="message" class="message"></div>
         <div id="loading" class="loading">加载中...</div>
         
@@ -333,7 +333,11 @@
     </div>
 
     <script>
-        const API_URL = 'data.php';
+        // JSONBin.io 配置 - 请替换为您的实际配置
+        const BIN_ID = '67d63b238a456b79667f6f3b'; // 您的Bin ID
+        const API_KEY = '$2a$10$QWzTyyKbjDzMAaMPbWz6l.kntHx4rMZ6pNz0M0S8nRqLmX9vKjY1S'; // 您的API Key
+        const API_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
         let currentUser = localStorage.getItem('currentUser');
         let cart = JSON.parse(localStorage.getItem('cart')) || [];
         let roles = [];
@@ -343,6 +347,67 @@
         if (!currentUser) window.location.href = 'index.html';
         document.getElementById('currentUser').textContent = '👤 ' + currentUser;
 
+        // 从云端加载数据
+        async function loadFromCloud() {
+            try {
+                const response = await fetch(API_URL, {
+                    headers: {
+                        'X-Master-Key': API_KEY
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    const data = result.record;
+                    
+                    roles = data.roles || [];
+                    inventory = data.inventory || {};
+                    orders = data.orders || [];
+                    
+                    // 更新本地备份
+                    localStorage.setItem('backup_roles', JSON.stringify(roles));
+                    localStorage.setItem('backup_inventory', JSON.stringify(inventory));
+                    localStorage.setItem('backup_orders', JSON.stringify(orders));
+                    
+                    return true;
+                }
+            } catch (error) {
+                console.error('云端加载失败', error);
+            }
+            
+            // 降级使用本地备份
+            roles = JSON.parse(localStorage.getItem('backup_roles')) || [];
+            inventory = JSON.parse(localStorage.getItem('backup_inventory')) || {};
+            orders = JSON.parse(localStorage.getItem('backup_orders')) || [];
+            return false;
+        }
+
+        // 保存到云端
+        async function saveToCloud() {
+            const data = { roles, inventory, orders };
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': API_KEY
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                if (response.ok) {
+                    // 更新本地备份
+                    localStorage.setItem('backup_roles', JSON.stringify(roles));
+                    localStorage.setItem('backup_inventory', JSON.stringify(inventory));
+                    localStorage.setItem('backup_orders', JSON.stringify(orders));
+                    return true;
+                }
+            } catch (error) {
+                console.error('保存到云端失败', error);
+            }
+            return false;
+        }
+
         // 显示消息
         function showMessage(text, isSuccess = true) {
             const msg = document.getElementById('message');
@@ -351,42 +416,6 @@
             msg.style.color = isSuccess ? '#155724' : '#721c24';
             msg.textContent = text;
             setTimeout(() => msg.style.display = 'none', 3000);
-        }
-
-        // 获取数据
-        async function fetchData() {
-            try {
-                const response = await fetch(API_URL);
-                const data = await response.json();
-                roles = data.roles || [];
-                inventory = data.inventory || {};
-                orders = data.orders || [];
-                return true;
-            } catch (error) {
-                console.error('获取数据失败', error);
-                // 降级使用localStorage
-                roles = JSON.parse(localStorage.getItem('roles')) || [];
-                inventory = JSON.parse(localStorage.getItem('inventory')) || {};
-                orders = JSON.parse(localStorage.getItem('orders')) || [];
-                return false;
-            }
-        }
-
-        // 保存数据
-        async function saveData() {
-            try {
-                await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ roles, inventory, orders })
-                });
-            } catch (error) {
-                console.error('保存数据失败', error);
-                // 降级使用localStorage
-                localStorage.setItem('roles', JSON.stringify(roles));
-                localStorage.setItem('inventory', JSON.stringify(inventory));
-                localStorage.setItem('orders', JSON.stringify(orders));
-            }
         }
 
         // 更新角色选择
@@ -533,8 +562,8 @@
             if (cart.length === 0) return showMessage('购物车是空的', false);
             if (!confirm('确认提交订单？')) return;
 
-            // 重新获取最新数据
-            await fetchData();
+            // 重新加载最新数据
+            await loadFromCloud();
 
             // 检查库存
             for (let item of cart) {
@@ -554,7 +583,8 @@
                 });
             });
 
-            await saveData();
+            // 保存到云端
+            await saveToCloud();
 
             cart = [];
             localStorage.setItem('cart', JSON.stringify(cart));
@@ -578,7 +608,7 @@
             document.getElementById('loading').style.display = 'block';
             document.querySelector('.main-content').style.display = 'none';
             
-            await fetchData();
+            await loadFromCloud();
             
             updateRoleSelect();
             updateInventoryTable();
@@ -591,9 +621,9 @@
 
         init();
 
-        // 每30秒刷新一次数据
+        // 每30秒自动刷新数据
         setInterval(async () => {
-            await fetchData();
+            await loadFromCloud();
             updateInventoryTable();
             updateRoleSelect();
             updateHistory();
