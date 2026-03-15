@@ -63,6 +63,7 @@
         .btn-success { background: #28a745; }
         .btn-danger { background: #dc3545; }
         .btn-warning { background: #ffc107; color: #333; }
+        .btn-info { background: #17a2b8; }
         
         .stats-grid {
             display: grid;
@@ -261,6 +262,12 @@
             display: none;
         }
         
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+        
         @media (max-width: 768px) {
             .stats-grid, .action-grid {
                 grid-template-columns: 1fr;
@@ -275,108 +282,127 @@
             <div class="nav-buttons">
                 <button class="btn btn-primary" onclick="goHome()">返回首页</button>
                 <button class="btn btn-success" onclick="exportCSV()">📥 导出CSV</button>
+                <button class="btn btn-info" onclick="exportExcel()">📊 导出Excel</button>
                 <button class="btn btn-danger" onclick="logout()">退出</button>
             </div>
         </div>
         
         <div id="message" class="message"></div>
+        <div id="loading" class="loading">加载中...</div>
         
-        <!-- 统计卡片 -->
-        <div class="stats-grid" id="statsCards"></div>
-        
-        <!-- 角色管理 -->
-        <div class="role-management">
-            <div class="section-title">🎭 角色管理</div>
-            <div class="add-role-form">
-                <input type="text" id="newRoleName" placeholder="新角色名称">
-                <input type="number" id="newRoleStock" placeholder="初始库存" value="320" min="1">
-                <button class="btn btn-success" onclick="addRole()">添加角色</button>
+        <div class="main-content" style="display: none;">
+            <!-- 统计卡片 -->
+            <div class="stats-grid" id="statsCards"></div>
+            
+            <!-- 角色管理 -->
+            <div class="role-management">
+                <div class="section-title">🎭 角色管理</div>
+                <div class="add-role-form">
+                    <input type="text" id="newRoleName" placeholder="新角色名称">
+                    <input type="number" id="newRoleStock" placeholder="初始配数" value="320" min="1">
+                    <button class="btn btn-success" onclick="addRole()">添加角色</button>
+                </div>
+                <div class="role-list" id="roleList"></div>
             </div>
-            <div class="role-list" id="roleList"></div>
-        </div>
-        
-        <!-- 库存管理 -->
-        <div class="inventory-management">
-            <div class="section-title">📦 库存管理</div>
-            <div class="inventory-grid" id="inventoryManagement"></div>
-        </div>
-        
-        <!-- 管理操作 -->
-        <div class="action-section">
-            <div class="section-title">🛠️ 管理操作</div>
-            <div class="action-grid">
-                <!-- 删除单条记录 -->
-                <div class="action-card">
-                    <h4>🗑️ 删除单条记录</h4>
-                    <p>根据序号删除指定的排表记录</p>
-                    <select id="orderSelect"></select>
-                    <button class="delete-btn" onclick="deleteSingleOrder()">删除选中记录</button>
-                </div>
-                
-                <!-- 删除用户所有记录 -->
-                <div class="action-card">
-                    <h4>👤 删除用户所有记录</h4>
-                    <p>删除某个用户的所有排表</p>
-                    <select id="userSelect"></select>
-                    <button class="delete-btn" onclick="deleteUserOrders()">删除该用户所有记录</button>
-                </div>
-                
-                <!-- 危险操作 -->
-                <div class="action-card" style="border-left-color: #721c24;">
-                    <h4>⚠️ 危险操作</h4>
-                    <p>清空所有排表记录，重置所有库存</p>
-                    <button class="delete-btn" onclick="resetAllData()" style="background: #721c24;">清空所有数据</button>
+            
+            <!-- 库存管理（可自定义配数） -->
+            <div class="inventory-management">
+                <div class="section-title">📦 库存管理（可修改配数）</div>
+                <div class="inventory-grid" id="inventoryManagement"></div>
+            </div>
+            
+            <!-- 管理操作 -->
+            <div class="action-section">
+                <div class="section-title">🛠️ 管理操作</div>
+                <div class="action-grid">
+                    <!-- 删除单条记录 -->
+                    <div class="action-card">
+                        <h4>🗑️ 删除单条记录</h4>
+                        <p>根据序号删除指定的排表记录</p>
+                        <select id="orderSelect"></select>
+                        <button class="delete-btn" onclick="deleteSingleOrder()">删除选中记录</button>
+                    </div>
+                    
+                    <!-- 删除用户所有记录 -->
+                    <div class="action-card">
+                        <h4>👤 删除用户所有记录</h4>
+                        <p>删除某个用户的所有排表</p>
+                        <select id="userSelect"></select>
+                        <button class="delete-btn" onclick="deleteUserOrders()">删除该用户所有记录</button>
+                    </div>
+                    
+                    <!-- 危险操作 -->
+                    <div class="action-card" style="border-left-color: #721c24;">
+                        <h4>⚠️ 危险操作</h4>
+                        <p>清空所有排表记录，重置所有库存</p>
+                        <button class="delete-btn" onclick="resetAllData()" style="background: #721c24;">清空所有数据</button>
+                    </div>
                 </div>
             </div>
-        </div>
-        
-        <!-- 所有排表记录 -->
-        <div class="table-section">
-            <h2 style="margin-bottom: 20px;">📝 所有排表记录</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>序号</th>
-                        <th>CN</th>
-                        <th>角色</th>
-                        <th>数量</th>
-                        <th>时间</th>
-                    </tr>
-                </thead>
-                <tbody id="ordersTable"></tbody>
-            </table>
+            
+            <!-- 所有排表记录（显示谁什么时候排了什么） -->
+            <div class="table-section">
+                <h2 style="margin-bottom: 20px;">📝 所有排表记录</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>序号</th>
+                            <th>CN</th>
+                            <th>角色</th>
+                            <th>数量</th>
+                            <th>时间</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ordersTable"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
     <script>
+        const API_URL = 'data.php';
+        let roles = [];
+        let inventory = {};
+        let orders = [];
+
         // 检查管理员权限
         if (localStorage.getItem('isAdmin') !== 'true') {
             window.location.href = 'index.html';
         }
 
         // 获取数据
-        function getRoles() {
-            return JSON.parse(localStorage.getItem('roles')) || [];
+        async function fetchData() {
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                roles = data.roles || [];
+                inventory = data.inventory || {};
+                orders = data.orders || [];
+                return true;
+            } catch (error) {
+                console.error('获取数据失败', error);
+                // 降级使用localStorage
+                roles = JSON.parse(localStorage.getItem('roles')) || [];
+                inventory = JSON.parse(localStorage.getItem('inventory')) || {};
+                orders = JSON.parse(localStorage.getItem('orders')) || [];
+                return false;
+            }
         }
 
-        function getInventory() {
-            return JSON.parse(localStorage.getItem('inventory')) || {};
-        }
-
-        function getOrders() {
-            return JSON.parse(localStorage.getItem('orders')) || [];
-        }
-
-        function saveRoles(roles) {
-            localStorage.setItem('roles', JSON.stringify(roles));
-        }
-
-        function saveInventory(inv) {
-            localStorage.setItem('inventory', JSON.stringify(inv));
-        }
-
-        function saveOrders(orders) {
-            localStorage.setItem('orders', JSON.stringify(orders));
+        // 保存数据
+        async function saveData() {
+            try {
+                await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ roles, inventory, orders })
+                });
+            } catch (error) {
+                console.error('保存数据失败', error);
+                localStorage.setItem('roles', JSON.stringify(roles));
+                localStorage.setItem('inventory', JSON.stringify(inventory));
+                localStorage.setItem('orders', JSON.stringify(orders));
+            }
         }
 
         // 显示消息
@@ -391,8 +417,6 @@
 
         // 更新统计卡片
         function updateStats() {
-            const orders = getOrders();
-            const inventory = getInventory();
             const users = [...new Set(orders.map(o => o.cn))];
             const totalQty = orders.reduce((sum, o) => sum + o.quantity, 0);
             const totalRemaining = Object.values(inventory).reduce((sum, i) => sum + i.remaining, 0);
@@ -417,9 +441,8 @@
             `;
         }
 
-        // 更新角色列表显示
+        // 更新角色列表
         function updateRoleList() {
-            const roles = getRoles();
             const list = document.getElementById('roleList');
             list.innerHTML = '';
 
@@ -436,8 +459,6 @@
 
         // 更新库存管理
         function updateInventoryManagement() {
-            const roles = getRoles();
-            const inventory = getInventory();
             const grid = document.getElementById('inventoryManagement');
             grid.innerHTML = '';
 
@@ -449,7 +470,7 @@
                     <div class="role-name">${role}</div>
                     <div class="stock-control">
                         <input type="number" id="stock-${role}" value="${item.total}" min="1">
-                        <button class="update-btn" onclick="updateStock('${role}')">更新</button>
+                        <button class="update-btn" onclick="updateStock('${role}')">更新配数</button>
                     </div>
                     <div class="current-stock">当前剩余: ${item.remaining}张</div>
                 `;
@@ -459,7 +480,6 @@
 
         // 更新下拉框
         function updateSelects() {
-            const orders = getOrders();
             const orderSelect = document.getElementById('orderSelect');
             const userSelect = document.getElementById('userSelect');
             const users = [...new Set(orders.map(o => o.cn))];
@@ -477,7 +497,6 @@
 
         // 更新订单表格
         function updateOrdersTable() {
-            const orders = getOrders();
             const tbody = document.getElementById('ordersTable');
             tbody.innerHTML = '';
 
@@ -500,14 +519,11 @@
         }
 
         // 添加角色
-        function addRole() {
+        async function addRole() {
             const newRole = document.getElementById('newRoleName').value.trim();
             const stock = parseInt(document.getElementById('newRoleStock').value);
 
             if (!newRole) return alert('请输入角色名称');
-
-            const roles = getRoles();
-            const inventory = getInventory();
 
             if (roles.includes(newRole)) {
                 return alert('角色已存在');
@@ -516,8 +532,7 @@
             roles.push(newRole);
             inventory[newRole] = { total: stock, remaining: stock };
 
-            saveRoles(roles);
-            saveInventory(inventory);
+            await saveData();
 
             document.getElementById('newRoleName').value = '';
             updateRoleList();
@@ -527,35 +542,31 @@
         }
 
         // 删除角色
-        function deleteRole(role) {
+        async function deleteRole(role) {
             if (!confirm(`确定要删除角色 ${role} 吗？`)) return;
-
-            const roles = getRoles();
-            const inventory = getInventory();
-            const orders = getOrders();
 
             // 检查是否有该角色的订单
             const hasOrders = orders.some(o => o.role === role);
             if (hasOrders && !confirm(`该角色已有排表记录，删除后相关记录将无法显示，确定继续？`)) return;
 
-            const newRoles = roles.filter(r => r !== role);
+            roles = roles.filter(r => r !== role);
             delete inventory[role];
 
-            saveRoles(newRoles);
-            saveInventory(inventory);
+            await saveData();
 
             updateRoleList();
             updateInventoryManagement();
             updateStats();
+            updateSelects();
+            updateOrdersTable();
             showMessage(`角色 ${role} 已删除`);
         }
 
-        // 更新库存
-        function updateStock(role) {
+        // 更新库存（修改配数）
+        async function updateStock(role) {
             const newTotal = parseInt(document.getElementById(`stock-${role}`).value);
-            if (newTotal < 1) return alert('库存必须大于0');
+            if (newTotal < 1) return alert('配数必须大于0');
 
-            const inventory = getInventory();
             const currentRemaining = inventory[role].remaining;
             const currentTotal = inventory[role].total;
             
@@ -564,33 +575,30 @@
             const newRemaining = currentRemaining + diff;
 
             if (newRemaining < 0) {
-                return alert('新库存不能小于已售出的数量');
+                return alert('新配数不能小于已售出的数量');
             }
 
             inventory[role] = { total: newTotal, remaining: newRemaining };
-            saveInventory(inventory);
+            await saveData();
 
             updateInventoryManagement();
             updateStats();
-            showMessage(`${role} 库存已更新`);
+            showMessage(`${role} 配数已更新为 ${newTotal}`);
         }
 
         // 删除单条记录
-        function deleteSingleOrder() {
+        async function deleteSingleOrder() {
             const index = document.getElementById('orderSelect').value;
             if (index === '') return alert('请选择记录');
 
             if (!confirm('确定删除这条记录？')) return;
 
-            const orders = getOrders();
-            const inventory = getInventory();
             const order = orders[index];
 
             inventory[order.role].remaining += order.quantity;
             orders.splice(index, 1);
 
-            saveInventory(inventory);
-            saveOrders(orders);
+            await saveData();
 
             updateStats();
             updateSelects();
@@ -600,14 +608,12 @@
         }
 
         // 删除用户所有记录
-        function deleteUserOrders() {
+        async function deleteUserOrders() {
             const user = document.getElementById('userSelect').value;
             if (user === '') return alert('请选择用户');
 
             if (!confirm(`确定删除用户 ${user} 的所有记录？`)) return;
 
-            const orders = getOrders();
-            const inventory = getInventory();
             let deleted = 0;
 
             const newOrders = orders.filter(order => {
@@ -619,8 +625,8 @@
                 return true;
             });
 
-            saveInventory(inventory);
-            saveOrders(newOrders);
+            orders = newOrders;
+            await saveData();
 
             updateStats();
             updateSelects();
@@ -630,20 +636,19 @@
         }
 
         // 重置所有数据
-        function resetAllData() {
+        async function resetAllData() {
             const pwd = prompt('请输入导出密码以确认：');
             if (pwd !== 'hamanicetrip') return alert('密码错误！');
 
-            if (!confirm('⚠️ 这将删除所有记录并重置所有角色的库存为320！确定？')) return;
+            if (!confirm('⚠️ 这将删除所有记录并重置所有角色的库存！确定？')) return;
 
-            const roles = getRoles();
-            const inventory = {};
+            // 重置库存（保持总配数不变，只重置剩余库存）
             roles.forEach(role => {
-                inventory[role] = { total: 320, remaining: 320 };
+                inventory[role].remaining = inventory[role].total;
             });
 
-            saveInventory(inventory);
-            saveOrders([]);
+            orders = [];
+            await saveData();
 
             updateStats();
             updateSelects();
@@ -657,16 +662,12 @@
             const pwd = prompt('请输入导出密码：');
             if (pwd !== 'hamanicetrip') return alert('密码错误！');
 
-            const orders = getOrders();
-            const inventory = getInventory();
-            const roles = getRoles();
-
             let csv = "=== 排表明细 ===\n";
             csv += "CN,角色,数量,时间\n";
             orders.forEach(o => csv += `${o.cn},${o.role},${o.quantity},${o.time}\n`);
 
             csv += "\n=== 库存状态 ===\n";
-            csv += "角色,总库存,剩余库存\n";
+            csv += "角色,总配数,剩余库存\n";
             roles.forEach(role => {
                 const item = inventory[role] || { total: 320, remaining: 320 };
                 csv += `${role},${item.total},${item.remaining}\n`;
@@ -687,6 +688,56 @@
             link.click();
         }
 
+        // 导出Excel (实际上是HTML格式的Excel)
+        function exportExcel() {
+            const pwd = prompt('请输入导出密码：');
+            if (pwd !== 'hamanicetrip') return alert('密码错误！');
+
+            let html = `
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>周边排表数据</title>
+                    <style>
+                        th { background: #667eea; color: white; padding: 8px; }
+                        td { padding: 6px; border: 1px solid #ddd; }
+                        table { border-collapse: collapse; width: 100%; }
+                    </style>
+                </head>
+                <body>
+                <h2>排表明细</h2>
+                <table border="1">
+                    <tr><th>CN</th><th>角色</th><th>数量</th><th>时间</th></tr>
+            `;
+
+            orders.forEach(o => {
+                html += `<tr><td>${o.cn}</td><td>${o.role}</td><td>${o.quantity}</td><td>${o.time}</td></tr>`;
+            });
+
+            html += `</table><h2>库存状态</h2><table border="1"><tr><th>角色</th><th>总配数</th><th>剩余库存</th></tr>`;
+
+            roles.forEach(role => {
+                const item = inventory[role] || { total: 320, remaining: 320 };
+                html += `<tr><td>${role}</td><td>${item.total}</td><td>${item.remaining}</td></tr>`;
+            });
+
+            const totalQty = orders.reduce((sum, o) => sum + o.quantity, 0);
+            const users = [...new Set(orders.map(o => o.cn))];
+
+            html += `</table><h2>统计信息</h2><table border="1">`;
+            html += `<tr><td>总排表数量</td><td>${totalQty}张</td></tr>`;
+            html += `<tr><td>总订单数</td><td>${orders.length}个</td></tr>`;
+            html += `<tr><td>参与人数</td><td>${users.length}人</td></tr>`;
+            html += `<tr><td>导出时间</td><td>${new Date().toLocaleString()}</td></tr>`;
+            html += `</table></body></html>`;
+
+            const blob = new Blob(["\uFEFF" + html], { type: 'application/vnd.ms-excel' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = '周边排表_' + new Date().toISOString().slice(0,19).replace(/:/g, '-') + '.xls';
+            link.click();
+        }
+
         function goHome() {
             window.location.href = 'index.html';
         }
@@ -698,15 +749,32 @@
         }
 
         // 初始化
-        function init() {
+        async function init() {
+            document.getElementById('loading').style.display = 'block';
+            document.querySelector('.main-content').style.display = 'none';
+            
+            await fetchData();
+            
             updateStats();
             updateRoleList();
             updateInventoryManagement();
             updateSelects();
             updateOrdersTable();
+            
+            document.getElementById('loading').style.display = 'none';
+            document.querySelector('.main-content').style.display = 'block';
         }
 
         init();
+
+        // 每30秒刷新数据
+        setInterval(async () => {
+            await fetchData();
+            updateStats();
+            updateInventoryManagement();
+            updateSelects();
+            updateOrdersTable();
+        }, 30000);
     </script>
 </body>
 </html>
