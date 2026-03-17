@@ -29,6 +29,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         .header h1 {
             font-size: 24px;
@@ -54,20 +55,31 @@
             padding: 12px;
             border-radius: 5px;
             margin-bottom: 20px;
+            border: 1px solid #ffeeba;
         }
         
         .message {
-            background: #d4edda;
-            color: #155724;
             padding: 12px;
             border-radius: 5px;
             margin-bottom: 20px;
             display: none;
         }
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
         
         .main-content {
             display: grid;
-            grid-template-columns: 1fr 300px;
+            grid-template-columns: 1fr 350px;
             gap: 20px;
         }
         
@@ -75,10 +87,13 @@
             background: white;
             border-radius: 10px;
             padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
         
         .add-form {
             margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #eee;
         }
         .add-form h2 {
             font-size: 18px;
@@ -90,7 +105,7 @@
             gap: 10px;
         }
         select, input {
-            padding: 10px;
+            padding: 12px;
             border: 1px solid #ddd;
             border-radius: 5px;
             font-size: 14px;
@@ -105,13 +120,18 @@
             background: #17a2b8;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 20px;
             border-radius: 5px;
             cursor: pointer;
+            font-weight: bold;
+        }
+        .add-btn:hover {
+            background: #138496;
         }
         
         .inventory-table {
             overflow-x: auto;
+            margin-bottom: 30px;
         }
         .inventory-table h2 {
             font-size: 18px;
@@ -152,6 +172,9 @@
             background: white;
             border-radius: 10px;
             padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 20px;
         }
         .cart-header {
             display: flex;
@@ -168,9 +191,10 @@
         .cart-total {
             background: #667eea;
             color: white;
-            padding: 5px 10px;
+            padding: 5px 12px;
             border-radius: 20px;
             font-size: 14px;
+            font-weight: bold;
         }
         .cart-items {
             min-height: 200px;
@@ -182,8 +206,11 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 10px;
+            padding: 12px;
             border-bottom: 1px solid #eee;
+            background: #f8f9fa;
+            margin-bottom: 5px;
+            border-radius: 5px;
         }
         .cart-item-info {
             flex: 1;
@@ -191,6 +218,7 @@
         .cart-item-role {
             font-weight: bold;
             color: #333;
+            margin-bottom: 3px;
         }
         .cart-item-quantity {
             font-size: 13px;
@@ -199,13 +227,19 @@
         .cart-item-remove {
             color: #dc3545;
             cursor: pointer;
-            font-size: 18px;
-            padding: 0 5px;
+            font-size: 20px;
+            padding: 0 8px;
+            font-weight: bold;
+        }
+        .cart-item-remove:hover {
+            color: #c82333;
         }
         .cart-empty {
             text-align: center;
             color: #999;
             padding: 40px 0;
+            background: #f8f9fa;
+            border-radius: 5px;
         }
         .cart-actions {
             display: flex;
@@ -219,6 +253,10 @@
             padding: 12px;
             border-radius: 5px;
             cursor: pointer;
+            font-weight: bold;
+        }
+        .submit-btn:hover {
+            background: #218838;
         }
         .clear-btn {
             flex: 1;
@@ -228,6 +266,10 @@
             padding: 12px;
             border-radius: 5px;
             cursor: pointer;
+            font-weight: bold;
+        }
+        .clear-btn:hover {
+            background: #5a6268;
         }
         
         .order-history {
@@ -239,57 +281,46 @@
             color: #333;
         }
         
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #666;
-        }
-        
         .data-management {
             margin-top: 20px;
             padding-top: 20px;
-            border-top: 1px solid #eee;
+            border-top: 2px dashed #dee2e6;
         }
-        
         .data-management h3 {
             font-size: 16px;
-            margin-bottom: 10px;
-            color: #333;
+            margin-bottom: 15px;
+            color: #495057;
         }
-        
         .data-buttons {
             display: flex;
             gap: 10px;
         }
-        
         .data-btn {
             flex: 1;
-            padding: 8px;
+            padding: 10px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             font-size: 13px;
+            font-weight: bold;
         }
-        
         .data-btn.backup {
             background: #17a2b8;
             color: white;
         }
-        
         .data-btn.restore {
             background: #ffc107;
-            color: #333;
+            color: #212529;
         }
-        
         .data-btn.share {
             background: #28a745;
             color: white;
         }
-        
         .data-tip {
             font-size: 12px;
-            color: #666;
-            margin-top: 8px;
+            color: #6c757d;
+            margin-top: 10px;
+            text-align: center;
         }
         
         @media (max-width: 768px) {
@@ -305,24 +336,30 @@
             .data-buttons {
                 flex-direction: column;
             }
+            .right-column {
+                position: static;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>周边排表系统</h1>
+            <h1>🎴 周边排表系统</h1>
             <div class="user-info">
-                <span id="currentUser"></span>
-                <button class="logout-btn" onclick="logout()">退出</button>
+                <span id="currentUser" style="font-weight: bold; color: #667eea;"></span>
+                <button class="logout-btn" onclick="logout()">退出登录</button>
             </div>
         </div>
         
-        <div class="note">📌 提示：数据保存在您的浏览器中，刷新页面不会丢失。可以使用备份功能导出文件保存。</div>
-        <div id="message" class="message"></div>
-        <div id="loading" class="loading">加载中...</div>
+        <div class="note">
+            <strong>📌 提示：</strong> 数据保存在您的浏览器中，刷新页面不会丢失。每个角色初始库存320张，可同时添加多个角色。
+        </div>
         
-        <div class="main-content" style="display: none;">
+        <div id="message" class="message"></div>
+        
+        <div class="main-content">
+            <!-- 左侧内容 -->
             <div class="left-column">
                 <div class="add-form">
                     <h2>➕ 添加角色到购物车</h2>
@@ -330,7 +367,7 @@
                         <select id="roleSelect">
                             <option value="">-- 请选择角色 --</option>
                         </select>
-                        <input type="number" id="quantity" placeholder="数量" min="1" value="1">
+                        <input type="number" id="quantity" min="1" value="1" placeholder="数量">
                         <button class="add-btn" onclick="addToCart()">加入购物车</button>
                     </div>
                 </div>
@@ -361,36 +398,37 @@
                                 <th>提交时间</th>
                             </tr>
                         </thead>
-                        <tbody id="historyBody"></tbody>
+                        <tbody id="historyBody">
+                            <tr><td colspan="3" style="text-align:center; padding:20px; color:#999;">暂无排表记录</td></tr>
+                        </tbody>
                     </table>
                 </div>
             </div>
             
+            <!-- 右侧购物车 -->
             <div class="right-column">
                 <div class="cart-header">
                     <h2>🛒 购物车</h2>
                     <span class="cart-total" id="cartTotal">0张</span>
                 </div>
                 <div class="cart-items" id="cartItems">
-                    <div class="cart-empty">购物车是空的<br>请从左侧添加角色</div>
+                    <div class="cart-empty">🛒 购物车是空的<br>请从左侧添加角色</div>
                 </div>
                 <div class="cart-actions">
-                    <button class="submit-btn" onclick="submitOrder()">提交全部订单</button>
-                    <button class="clear-btn" onclick="clearCart()">清空</button>
+                    <button class="submit-btn" onclick="submitOrder()">📦 提交订单</button>
+                    <button class="clear-btn" onclick="clearCart()">🗑️ 清空</button>
                 </div>
                 
-                <!-- 数据管理区域（新增） -->
+                <!-- 数据管理 -->
                 <div class="data-management">
-                    <h3>📦 数据管理</h3>
+                    <h3>💾 数据备份</h3>
                     <div class="data-buttons">
-                        <button class="data-btn backup" onclick="exportData()">📥 备份数据</button>
-                        <button class="data-btn restore" onclick="importData()">📤 恢复数据</button>
-                        <button class="data-btn share" onclick="shareData()">🔗 分享数据</button>
+                        <button class="data-btn backup" onclick="exportData()">📥 备份</button>
+                        <button class="data-btn restore" onclick="importData()">📤 恢复</button>
+                        <button class="data-btn share" onclick="shareData()">🔗 分享</button>
                     </div>
                     <div class="data-tip">
-                        💡 备份：下载文件保存<br>
-                        💡 恢复：上传备份文件<br>
-                        💡 分享：生成链接发给朋友
+                        备份到文件 | 从文件恢复 | 生成分享链接
                     </div>
                 </div>
             </div>
@@ -398,53 +436,62 @@
     </div>
 
     <script>
-        // ===== 数据持久化解决方案 =====
-        // 使用 localStorage 保存数据，刷新不会丢失
-
-        let currentUser = localStorage.getItem('currentUser');
-        let cart = JSON.parse(localStorage.getItem('cart')) || [];
-
-        if (!currentUser) window.location.href = 'index.html';
-        document.getElementById('currentUser').textContent = '👤 ' + currentUser;
-
-        // 保存数据到 localStorage
-        function saveDataToLocal(key, data) {
-            localStorage.setItem(key, JSON.stringify(data));
-        }
-
-        // 从 localStorage 读取数据
-        function loadDataFromLocal(key, defaultValue) {
-            const data = localStorage.getItem(key);
-            return data ? JSON.parse(data) : defaultValue;
-        }
-
-        // 初始化数据
-        let roles = loadDataFromLocal('roles', [
+        // ==================== 数据初始化 ====================
+        const DEFAULT_ROLES = [
             '丛云添', '大黑可不可', '西园练牙', '神名雪风', '鹿礼光',
             '斜木七基', '衣川季助', '五十竹芥太', '久乐间潮', '夏烧千弥',
             '畔川几成', '北片来人', '木之内太绪', '百目鬼潜', '白光琉衣',
             '白光潜衣', '蜂乃屋凪', '夜半', '辉矢宗氏'
-        ]);
+        ];
 
-        let inventory = loadDataFromLocal('inventory', (() => {
-            const inv = {};
-            roles.forEach(role => {
-                inv[role] = { total: 320, remaining: 320 };
-            });
-            return inv;
-        })());
+        // 当前用户
+        let currentUser = localStorage.getItem('currentUser');
+        if (!currentUser) {
+            window.location.href = 'index.html';
+        }
+        document.getElementById('currentUser').textContent = '👤 ' + currentUser;
 
-        let orders = loadDataFromLocal('orders', []);
+        // 购物车
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-        // 保存所有数据
-        function saveAllData() {
-            saveDataToLocal('roles', roles);
-            saveDataToLocal('inventory', inventory);
-            saveDataToLocal('orders', orders);
-            console.log('数据已保存到本地');
+        // 角色列表
+        let roles = JSON.parse(localStorage.getItem('roles'));
+        if (!roles) {
+            roles = DEFAULT_ROLES;
+            localStorage.setItem('roles', JSON.stringify(roles));
         }
 
-        // 导出数据为文件（备份功能）
+        // 库存
+        let inventory = JSON.parse(localStorage.getItem('inventory'));
+        if (!inventory) {
+            inventory = {};
+            roles.forEach(role => {
+                inventory[role] = { total: 320, remaining: 320 };
+            });
+            localStorage.setItem('inventory', JSON.stringify(inventory));
+        }
+
+        // 订单
+        let orders = JSON.parse(localStorage.getItem('orders')) || [];
+
+        // ==================== 工具函数 ====================
+        function showMessage(text, type = 'success') {
+            const msg = document.getElementById('message');
+            msg.className = 'message ' + type;
+            msg.textContent = text;
+            setTimeout(() => {
+                msg.className = 'message';
+                msg.textContent = '';
+            }, 3000);
+        }
+
+        function saveAllData() {
+            localStorage.setItem('roles', JSON.stringify(roles));
+            localStorage.setItem('inventory', JSON.stringify(inventory));
+            localStorage.setItem('orders', JSON.stringify(orders));
+        }
+
+        // ==================== 备份功能 ====================
         function exportData() {
             const data = {
                 roles: roles,
@@ -460,10 +507,9 @@
             a.download = `排表备份_${new Date().toISOString().slice(0,10)}.json`;
             a.click();
             URL.revokeObjectURL(url);
-            showMessage('✅ 备份文件已下载，请妥善保存');
+            showMessage('✅ 备份文件已下载', 'success');
         }
 
-        // 导入数据（恢复功能）
         function importData() {
             const input = document.createElement('input');
             input.type = 'file';
@@ -479,13 +525,13 @@
                             inventory = data.inventory;
                             orders = data.orders || [];
                             saveAllData();
-                            showMessage('✅ 数据恢复成功！刷新页面查看');
+                            showMessage('✅ 数据恢复成功！刷新页面', 'success');
                             setTimeout(() => location.reload(), 1500);
                         } else {
-                            showMessage('❌ 备份文件格式错误', false);
+                            showMessage('❌ 备份文件格式错误', 'error');
                         }
                     } catch (err) {
-                        showMessage('❌ 文件读取失败', false);
+                        showMessage('❌ 文件读取失败', 'error');
                     }
                 };
                 reader.readAsText(file);
@@ -493,7 +539,6 @@
             input.click();
         }
 
-        // 分享数据（生成分享链接）
         function shareData() {
             const data = {
                 roles: roles,
@@ -501,19 +546,17 @@
                 orders: orders
             };
             
-            // 压缩数据
             const compressed = btoa(JSON.stringify(data));
             const shareUrl = `${location.origin}${location.pathname}?data=${compressed}`;
             
-            // 复制到剪贴板
             navigator.clipboard.writeText(shareUrl).then(() => {
-                showMessage('✅ 分享链接已复制到剪贴板！');
+                showMessage('✅ 分享链接已复制', 'success');
             }).catch(() => {
                 prompt('复制以下链接分享给朋友：', shareUrl);
             });
         }
 
-        // 检查 URL 参数，加载分享的数据
+        // 加载分享的数据
         function loadSharedData() {
             const urlParams = new URLSearchParams(window.location.search);
             const sharedData = urlParams.get('data');
@@ -525,80 +568,78 @@
                         inventory = data.inventory;
                         orders = data.orders || [];
                         saveAllData();
-                        // 清除 URL 参数
                         window.history.replaceState({}, document.title, location.pathname);
-                        showMessage('✅ 已加载分享的数据！');
+                        showMessage('✅ 已加载分享的数据', 'success');
+                        return true;
                     }
                 } catch (err) {
                     console.log('分享数据加载失败', err);
                 }
             }
+            return false;
         }
 
-        // 显示消息
-        function showMessage(text, isSuccess = true) {
-            const msg = document.getElementById('message');
-            msg.style.display = 'block';
-            msg.style.background = isSuccess ? '#d4edda' : '#f8d7da';
-            msg.style.color = isSuccess ? '#155724' : '#721c24';
-            msg.textContent = text;
-            setTimeout(() => msg.style.display = 'none', 3000);
-        }
-
-        // 更新角色选择
+        // ==================== 更新UI函数 ====================
         function updateRoleSelect() {
             const select = document.getElementById('roleSelect');
             select.innerHTML = '<option value="">-- 请选择角色 --</option>';
             roles.forEach(role => {
                 const remaining = inventory[role]?.remaining || 0;
-                select.innerHTML += `<option value="${role}">${role} (剩余: ${remaining}张)</option>`;
+                if (remaining > 0) {
+                    select.innerHTML += `<option value="${role}">${role} (剩余: ${remaining}张)</option>`;
+                } else {
+                    select.innerHTML += `<option value="${role}" disabled style="color:#999;">${role} (已售罄)</option>`;
+                }
             });
         }
 
-        // 更新库存表格
         function updateInventoryTable() {
             const tbody = document.getElementById('inventoryBody');
             let totalRemaining = 0, totalInCart = 0, totalTotal = 0;
             tbody.innerHTML = '';
 
             roles.forEach(role => {
-                const item = inventory[role] || { total: 0, remaining: 0 };
+                const item = inventory[role] || { total: 320, remaining: 320 };
                 const cartQty = cart.filter(i => i.role === role).reduce((sum, i) => sum + i.quantity, 0);
                 const available = item.remaining - cartQty;
                 totalRemaining += item.remaining;
                 totalInCart += cartQty;
                 totalTotal += item.total;
 
-                let stockClass = available >= 150 ? 'stock-high' : available >= 50 ? 'stock-medium' : 'stock-low';
-                tbody.innerHTML += `
-                    <tr>
-                        <td>${role}</td>
-                        <td>${item.total}</td>
-                        <td>${item.remaining}</td>
-                        <td>${cartQty}</td>
-                        <td><span class="stock-dot ${stockClass}"></span>${available}</td>
-                    </tr>
+                let stockClass = '';
+                if (available >= 150) stockClass = 'stock-high';
+                else if (available >= 50) stockClass = 'stock-medium';
+                else stockClass = 'stock-low';
+
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td><strong>${role}</strong></td>
+                    <td>${item.total}</td>
+                    <td style="${item.remaining < 50 ? 'color:#dc3545; font-weight:bold;' : ''}">${item.remaining}</td>
+                    <td>${cartQty}</td>
+                    <td><span class="stock-dot ${stockClass}"></span>${available}</td>
                 `;
+                tbody.appendChild(row);
             });
 
-            tbody.innerHTML += `
-                <tr class="total-row">
-                    <td>总计</td>
-                    <td>${totalTotal}</td>
-                    <td>${totalRemaining}</td>
-                    <td>${totalInCart}</td>
-                    <td>${totalRemaining - totalInCart}</td>
-                </tr>
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'total-row';
+            totalRow.innerHTML = `
+                <td><strong>总计</strong></td>
+                <td><strong>${totalTotal}</strong></td>
+                <td><strong>${totalRemaining}</strong></td>
+                <td><strong>${totalInCart}</strong></td>
+                <td><strong>${totalRemaining - totalInCart}</strong></td>
             `;
+            tbody.appendChild(totalRow);
         }
 
-        // 更新购物车
         function updateCart() {
             const cartItems = document.getElementById('cartItems');
             const cartTotal = document.getElementById('cartTotal');
             
             if (cart.length === 0) {
-                cartItems.innerHTML = '<div class="cart-empty">购物车是空的<br>请从左侧添加角色</div>';
+                cartItems.innerHTML = '<div class="cart-empty">🛒 购物车是空的<br>请从左侧添加角色</div>';
                 cartTotal.textContent = '0张';
                 return;
             }
@@ -619,52 +660,76 @@
             });
             cartItems.innerHTML = html;
             cartTotal.textContent = total + '张';
-            localStorage.setItem('cart', JSON.stringify(cart));
         }
 
-        // 更新订单历史
         function updateHistory() {
             const userOrders = orders.filter(o => o.cn === currentUser);
             const tbody = document.getElementById('historyBody');
             
             if (userOrders.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:20px;">暂无记录</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="3" style="text-align:center; padding:20px; color:#999;">暂无排表记录</td></tr>';
                 return;
             }
 
             let total = 0;
             tbody.innerHTML = '';
-            userOrders.forEach(order => {
+            userOrders.slice().reverse().forEach(order => {
                 total += order.quantity;
-                tbody.innerHTML += `<tr><td>${order.role}</td><td>${order.quantity}张</td><td>${order.time}</td></tr>`;
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${order.role}</td>
+                    <td>${order.quantity}张</td>
+                    <td>${order.time}</td>
+                `;
+                tbody.appendChild(row);
             });
-            tbody.innerHTML += `<tr class="total-row"><td>累计</td><td>${total}张</td><td></td></tr>`;
+
+            const totalRow = document.createElement('tr');
+            totalRow.className = 'total-row';
+            totalRow.innerHTML = `
+                <td><strong>累计</strong></td>
+                <td><strong>${total}张</strong></td>
+                <td></td>
+            `;
+            tbody.appendChild(totalRow);
         }
 
-        // 添加到购物车
+        // ==================== 操作函数 ====================
         function addToCart() {
             const role = document.getElementById('roleSelect').value;
             const quantity = parseInt(document.getElementById('quantity').value);
 
-            if (!role) return showMessage('请选择角色', false);
-            if (quantity < 1) return showMessage('请输入有效数量', false);
-
-            const cartQty = cart.filter(i => i.role === role).reduce((sum, i) => sum + i.quantity, 0);
-
-            if (cartQty + quantity > inventory[role].remaining) {
-                return showMessage(`库存不足！剩余：${inventory[role].remaining}张，购物车已有：${cartQty}张`, false);
+            if (!role) {
+                showMessage('请选择角色', 'error');
+                return;
+            }
+            if (quantity < 1) {
+                showMessage('请输入有效数量', 'error');
+                return;
             }
 
-            cart.push({ role, quantity, time: new Date().toLocaleString() });
+            const cartQty = cart.filter(i => i.role === role).reduce((sum, i) => sum + i.quantity, 0);
+            const available = inventory[role].remaining - cartQty;
+
+            if (quantity > available) {
+                showMessage(`库存不足！最多可排 ${available} 张`, 'error');
+                return;
+            }
+
+            cart.push({ 
+                role, 
+                quantity, 
+                time: new Date().toLocaleString() 
+            });
+            
             localStorage.setItem('cart', JSON.stringify(cart));
             
             updateCart();
             updateInventoryTable();
             updateRoleSelect();
-            showMessage('✅ 已添加到购物车');
+            showMessage(`✅ 已添加 ${role} ${quantity}张`, 'success');
         }
 
-        // 从购物车移除
         function removeFromCart(index) {
             cart.splice(index, 1);
             localStorage.setItem('cart', JSON.stringify(cart));
@@ -673,32 +738,42 @@
             updateRoleSelect();
         }
 
-        // 清空购物车
         function clearCart() {
+            if (cart.length === 0) return;
             if (confirm('确定清空购物车？')) {
                 cart = [];
                 localStorage.setItem('cart', JSON.stringify(cart));
                 updateCart();
                 updateInventoryTable();
                 updateRoleSelect();
+                showMessage('购物车已清空', 'success');
             }
         }
 
-        // 提交订单
         function submitOrder() {
-            if (cart.length === 0) return showMessage('购物车是空的', false);
-            if (!confirm('确认提交订单？')) return;
+            if (cart.length === 0) {
+                showMessage('购物车是空的', 'error');
+                return;
+            }
 
             // 检查库存
             for (let item of cart) {
                 if (inventory[item.role].remaining < item.quantity) {
-                    return showMessage(`库存不足：${item.role}`, false);
+                    showMessage(`库存不足：${item.role}`, 'error');
+                    return;
                 }
             }
 
-            // 更新库存和订单
+            // 确认订单
+            if (!confirm(`确认提交 ${cart.length} 件商品？`)) return;
+
+            // 更新库存
             cart.forEach(item => {
                 inventory[item.role].remaining -= item.quantity;
+            });
+
+            // 添加订单
+            cart.forEach(item => {
                 orders.push({
                     cn: currentUser,
                     role: item.role,
@@ -707,41 +782,35 @@
                 });
             });
 
-            // 保存所有数据
+            // 保存数据
             saveAllData();
 
+            // 清空购物车
             cart = [];
             localStorage.setItem('cart', JSON.stringify(cart));
 
+            // 更新界面
             updateCart();
             updateInventoryTable();
             updateRoleSelect();
             updateHistory();
-            showMessage('✅ 订单提交成功');
+            
+            showMessage('✅ 订单提交成功！', 'success');
         }
 
-        // 退出
         function logout() {
             localStorage.removeItem('currentUser');
             localStorage.removeItem('isAdmin');
             window.location.href = 'index.html';
         }
 
-        // 初始化页面
+        // ==================== 初始化 ====================
         function init() {
-            document.getElementById('loading').style.display = 'block';
-            document.querySelector('.main-content').style.display = 'none';
-            
-            // 加载分享的数据
             loadSharedData();
-            
             updateRoleSelect();
             updateInventoryTable();
             updateCart();
             updateHistory();
-            
-            document.getElementById('loading').style.display = 'none';
-            document.querySelector('.main-content').style.display = 'grid';
         }
 
         init();
