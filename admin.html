@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>管理员后台 - 排表管理</title>
     <style>
+        /* 样式保持不变，和之前一样 */
         * {
             margin: 0;
             padding: 0;
@@ -424,12 +425,7 @@
     </div>
 
     <script>
-        // ==================== 检查管理员权限 ====================
-        if (localStorage.getItem('isAdmin') !== 'true') {
-            window.location.href = 'index.html';
-        }
-
-        // ==================== 数据初始化 ====================
+        // ==================== 默认角色列表 ====================
         const DEFAULT_ROLES = [
             '丛云添', '大黑可不可', '西园练牙', '神名雪风', '鹿礼光',
             '斜木七基', '衣川季助', '五十竹芥太', '久乐间潮', '夏烧千弥',
@@ -437,22 +433,53 @@
             '白光潜衣', '蜂乃屋凪', '夜半', '辉矢宗氏'
         ];
 
-        let roles = JSON.parse(localStorage.getItem('roles'));
-        if (!roles) {
-            roles = DEFAULT_ROLES;
-            localStorage.setItem('roles', JSON.stringify(roles));
+        // ==================== 检查管理员权限 ====================
+        if (localStorage.getItem('isAdmin') !== 'true') {
+            window.location.href = 'index.html';
         }
 
-        let inventory = JSON.parse(localStorage.getItem('inventory'));
-        if (!inventory) {
-            inventory = {};
-            roles.forEach(role => {
-                inventory[role] = { total: 320, remaining: 320 };
-            });
-            localStorage.setItem('inventory', JSON.stringify(inventory));
+        // ==================== 初始化数据 ====================
+        function initializeData() {
+            // 初始化角色列表
+            let roles = localStorage.getItem('roles');
+            if (!roles) {
+                console.log('初始化角色列表');
+                localStorage.setItem('roles', JSON.stringify(DEFAULT_ROLES));
+            }
+
+            // 初始化库存
+            let inventory = localStorage.getItem('inventory');
+            if (!inventory) {
+                console.log('初始化库存');
+                const rolesList = JSON.parse(localStorage.getItem('roles')) || DEFAULT_ROLES;
+                const newInventory = {};
+                rolesList.forEach(role => {
+                    newInventory[role] = { total: 320, remaining: 320 };
+                });
+                localStorage.setItem('inventory', JSON.stringify(newInventory));
+            }
+
+            // 初始化订单
+            if (!localStorage.getItem('orders')) {
+                localStorage.setItem('orders', JSON.stringify([]));
+            }
         }
 
+        // 立即执行初始化
+        initializeData();
+
+        // ==================== 加载数据 ====================
+        let roles = JSON.parse(localStorage.getItem('roles')) || DEFAULT_ROLES;
+        let inventory = JSON.parse(localStorage.getItem('inventory')) || {};
         let orders = JSON.parse(localStorage.getItem('orders')) || [];
+
+        // 确保所有角色都有库存
+        roles.forEach(role => {
+            if (!inventory[role]) {
+                inventory[role] = { total: 320, remaining: 320 };
+            }
+        });
+        saveAllData();
 
         // ==================== 工具函数 ====================
         function showMessage(text, type = 'success') {
@@ -895,7 +922,26 @@
 
         // ==================== 初始化 ====================
         function init() {
+            // 确保数据存在
+            initializeData();
+            
+            // 重新加载数据
+            roles = JSON.parse(localStorage.getItem('roles')) || DEFAULT_ROLES;
+            inventory = JSON.parse(localStorage.getItem('inventory')) || {};
+            orders = JSON.parse(localStorage.getItem('orders')) || [];
+
+            // 确保所有角色都有库存
+            roles.forEach(role => {
+                if (!inventory[role]) {
+                    inventory[role] = { total: 320, remaining: 320 };
+                }
+            });
+            saveAllData();
+
+            // 加载分享的数据
             loadSharedData();
+
+            // 更新UI
             updateStats();
             updateRoleList();
             updateInventoryManagement();
