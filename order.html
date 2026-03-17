@@ -436,7 +436,7 @@
     </div>
 
     <script>
-        // ==================== 数据初始化 ====================
+        // ==================== 默认角色列表（硬编码，确保始终有数据）====================
         const DEFAULT_ROLES = [
             '丛云添', '大黑可不可', '西园练牙', '神名雪风', '鹿礼光',
             '斜木七基', '衣川季助', '五十竹芥太', '久乐间潮', '夏烧千弥',
@@ -444,35 +444,58 @@
             '白光潜衣', '蜂乃屋凪', '夜半', '辉矢宗氏'
         ];
 
-        // 当前用户
+        // ==================== 初始化数据（确保一定有数据）====================
+        function initializeData() {
+            // 初始化角色列表
+            let roles = localStorage.getItem('roles');
+            if (!roles) {
+                console.log('初始化角色列表');
+                localStorage.setItem('roles', JSON.stringify(DEFAULT_ROLES));
+                roles = DEFAULT_ROLES;
+            } else {
+                roles = JSON.parse(roles);
+            }
+
+            // 初始化库存
+            let inventory = localStorage.getItem('inventory');
+            if (!inventory) {
+                console.log('初始化库存');
+                const newInventory = {};
+                roles.forEach(role => {
+                    newInventory[role] = { total: 320, remaining: 320 };
+                });
+                localStorage.setItem('inventory', JSON.stringify(newInventory));
+            }
+
+            // 初始化订单
+            if (!localStorage.getItem('orders')) {
+                localStorage.setItem('orders', JSON.stringify([]));
+            }
+        }
+
+        // 立即执行初始化
+        initializeData();
+
+        // ==================== 当前用户 ====================
         let currentUser = localStorage.getItem('currentUser');
         if (!currentUser) {
             window.location.href = 'index.html';
         }
         document.getElementById('currentUser').textContent = '👤 ' + currentUser;
 
-        // 购物车
+        // ==================== 从localStorage加载数据 ====================
+        let roles = JSON.parse(localStorage.getItem('roles')) || DEFAULT_ROLES;
+        let inventory = JSON.parse(localStorage.getItem('inventory')) || {};
+        let orders = JSON.parse(localStorage.getItem('orders')) || [];
         let cart = JSON.parse(localStorage.getItem('cart')) || [];
 
-        // 角色列表
-        let roles = JSON.parse(localStorage.getItem('roles'));
-        if (!roles) {
-            roles = DEFAULT_ROLES;
-            localStorage.setItem('roles', JSON.stringify(roles));
-        }
-
-        // 库存
-        let inventory = JSON.parse(localStorage.getItem('inventory'));
-        if (!inventory) {
-            inventory = {};
-            roles.forEach(role => {
+        // 确保所有角色都有库存数据（防止新增角色没有库存）
+        roles.forEach(role => {
+            if (!inventory[role]) {
                 inventory[role] = { total: 320, remaining: 320 };
-            });
-            localStorage.setItem('inventory', JSON.stringify(inventory));
-        }
-
-        // 订单
-        let orders = JSON.parse(localStorage.getItem('orders')) || [];
+            }
+        });
+        saveAllData();
 
         // ==================== 工具函数 ====================
         function showMessage(text, type = 'success') {
@@ -660,6 +683,7 @@
             });
             cartItems.innerHTML = html;
             cartTotal.textContent = total + '张';
+            localStorage.setItem('cart', JSON.stringify(cart));
         }
 
         function updateHistory() {
@@ -804,15 +828,38 @@
             window.location.href = 'index.html';
         }
 
-        // ==================== 初始化 ====================
+        // ==================== 初始化页面 ====================
         function init() {
+            // 确保数据存在
+            initializeData();
+            
+            // 重新加载数据
+            roles = JSON.parse(localStorage.getItem('roles')) || DEFAULT_ROLES;
+            inventory = JSON.parse(localStorage.getItem('inventory')) || {};
+            orders = JSON.parse(localStorage.getItem('orders')) || [];
+            cart = JSON.parse(localStorage.getItem('cart')) || [];
+
+            // 确保所有角色都有库存
+            roles.forEach(role => {
+                if (!inventory[role]) {
+                    inventory[role] = { total: 320, remaining: 320 };
+                }
+            });
+            saveAllData();
+
+            // 加载分享的数据
             loadSharedData();
+
+            // 更新UI
             updateRoleSelect();
             updateInventoryTable();
             updateCart();
             updateHistory();
+
+            console.log('初始化完成，角色数量:', roles.length);
         }
 
+        // 启动
         init();
     </script>
 </body>
